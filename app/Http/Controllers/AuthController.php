@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Restaurante;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
@@ -20,21 +21,29 @@ class AuthController extends Controller
     {
         $data = $request->validate([
             'email' => ['required', 'email'],
-            'cnpj' => ['required', 'string', 'max:18'],
+            'password' => ['required', 'string'],
         ]);
 
-        $restaurante = Restaurante::query()
-            ->where('email', $data['email'])
-            ->where('cnpj', $data['cnpj'])
-            ->where('status', 'ativo')
-            ->first();
-
-        if (!$restaurante) {
+        // Tentar autenticar usuário pela tabela users (email + senha)
+        if (!Auth::attempt(['email' => $data['email'], 'password' => $data['password']])) {
             return back()->withErrors([
-                'email' => 'Credenciais inválidas ou restaurante inativo.',
+                'email' => 'Credenciais inválidas.',
             ])->onlyInput('email');
         }
 
+        $user = Auth::user();
+
+        // Garantir que o usuário está vinculado a um restaurante ativo
+        $restaurante = $user->restaurante;
+
+        if (!$restaurante || $restaurante->status !== 'ativo') {
+            Auth::logout();
+            return back()->withErrors([
+                'email' => 'Usuário sem restaurante ativo vinculado.',
+            ])->onlyInput('email');
+        }
+
+        // Setar restaurante na sessão
         $request->session()->put('restaurante_id', $restaurante->id);
         $request->session()->put('restaurante_nome', $restaurante->nome);
         $request->session()->regenerate();
