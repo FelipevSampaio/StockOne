@@ -19,6 +19,15 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
+        // Criar usuário ADMIN (sem restaurante vinculado)
+        User::factory()->create([
+            'name' => 'Admin StockOne',
+            'email' => 'admin@stockone.com',
+            'password' => Hash::make('password123'),
+            'restaurante_id' => null,
+            'role' => 'admin',
+        ]);
+
         // Criar múltiplos restaurantes e usuários vinculados
         $data = [
             [
@@ -77,6 +86,7 @@ class DatabaseSeeder extends Seeder
                 'email' => $item['user']['email'],
                 'password' => Hash::make($item['user']['password']),
                 'restaurante_id' => $restaurante->id,
+                'role' => 'user',
             ]);
         }
     }

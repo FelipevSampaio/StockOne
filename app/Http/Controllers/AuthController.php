@@ -33,6 +33,12 @@ class AuthController extends Controller
 
         $user = Auth::user();
 
+        // Se for admin, redirecionar para admin dashboard
+        if ($user->isAdmin()) {
+            $request->session()->regenerate();
+            return redirect()->intended(route('admin.dashboard'));
+        }
+
         // Garantir que o usuário está vinculado a um restaurante ativo
         $restaurante = $user->restaurante;
 

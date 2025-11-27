@@ -22,6 +22,7 @@ class User extends Authenticatable
         'email',
         'password',
         'restaurante_id',
+        'role',
     ];
 
     /**
@@ -50,5 +51,15 @@ class User extends Authenticatable
     public function restaurante()
     {
         return $this->belongsTo(Restaurante::class);
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+
+    public function isUser(): bool
+    {
+        return $this->role === 'user';
     }
 }
